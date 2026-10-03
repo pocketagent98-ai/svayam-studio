@@ -1,0 +1,22 @@
+{
+  "engine": "godot",
+  "engine_version": "4.7.2-stable",
+  "engine_commit": "ed1daf0bf",
+  "engine_verified": false,
+  "language": "gdscript",
+  "renderer_default": "mobile",
+  "renderer_web_override": "gl_compatibility",
+  "physics_3d": "jolt",
+  "stretch_mode": "canvas_items",
+  "stretch_aspect": "expand",
+  "export_targets": [
+    "web",
+    "windows",
+    "linux"
+  ],
+  "optional_targets": [
+    "android"
+  ],
+  "local_models_allowed": false,
+  "_note": "Verify engine_version + engine_commit against the Godot KB before setting engine_verified=true (rule R9)."
+}

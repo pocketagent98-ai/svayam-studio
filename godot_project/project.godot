@@ -1,0 +1,25 @@
+; Engine configuration file.
+; SVAYAM STUDIO — minimal Godot 4.7.2 project scaffold.
+
+config_version=5
+
+[application]
+
+config/name="SvayamGame"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+renderer/rendering_method.web="gl_compatibility"
+
+[physics]
+
+3d/physics_engine="Jolt"
+
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"

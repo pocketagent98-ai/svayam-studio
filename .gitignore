@@ -1,0 +1,18 @@
+# Godot
+godot_project/.godot/
+godot_project/export/
+godot_project/*.translation
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Build + QA artifacts (regenerated every run; evidence bundles go to Actions artifacts)
+build/
+qa/
+*.log
+
+# Secrets — never commit
+.env
+*.keystore

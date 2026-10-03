@@ -1,0 +1,152 @@
+name: svayam-studio
+
+# Trigger: a labeled issue, a manual dispatch with a prompt, or the weekly radar.
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "What game should the studio build?"
+        type: string
+        required: true
+  schedule:
+    - cron: "0 3 * * 1"   # weekly market radar (Mondays 03:00 UTC)
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: factory-${{ github.event.issue.number || 'manual' }}
+  cancel-in-progress: true
+
+jobs:
+  # ---- STAGE 0: inspect -> ENGINE_PROFILE.json + CAPABILITY_REPORT.md -------
+  inspect:
+    if: github.event_name != 'issues' || github.event.label.name == 'new-game'
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.profile.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write engine profile
+        id: profile
+        run: |
+          python orchestrator/inspect.py --out context/ENGINE_PROFILE.json
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage0-capability-report
+          path: context/ENGINE_PROFILE.json
+
+  # ---- STAGE 1: deep research (cached) --------------------------------------
+  research:
+    needs: inspect
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: .cache/research
+          key: research-${{ github.run_id }}
+          restore-keys: research-
+      - name: Research (placeholder — P1)
+        run: python orchestrator/research/run.py || echo "research not yet implemented (P1)"
+
+  # ---- STAGE 2: design + review gate ----------------------------------------
+  design:
+    needs: research
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Design (placeholder — P2)
+        run: python orchestrator/docs/run.py || echo "design not yet implemented (P2)"
+
+  # ---- STAGE 3: assets + license gate ---------------------------------------
+  assets:
+    needs: design
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assets (placeholder — P3)
+        run: python orchestrator/assets/run.py || echo "assets not yet implemented (P3)"
+
+  # ---- STAGE 4: vertical slice build ----------------------------------------
+  slice:
+    needs: [design, assets]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Slice build (placeholder — P4)
+        run: python orchestrator/codegen/run.py || echo "codegen not yet implemented (P4)"
+
+  # ---- STAGE 5+6: QA evidence + fixer loop ----------------------------------
+  qa:
+    needs: slice
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: QA (placeholder — P4/P5)
+        run: |
+          python orchestrator/qa/vision_or_heuristic.py qa/frames 2>/dev/null \
+            || echo "no frames yet (P4)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-bundle
+          path: |
+            qa/
+            memory/TEST_RESULTS.md
+          if-no-files-found: warn
+
+  # ---- STAGE 7: slice gate ---------------------------------------------------
+  gate:
+    needs: qa
+    runs-on: ubuntu-latest
+    outputs:
+      pass: ${{ steps.score.outputs.pass }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Score the slice
+        id: score
+        run: python orchestrator/qa/gate.py --out memory/TEST_RESULTS.md
+
+  # ---- STAGE 8: production ---------------------------------------------------
+  production:
+    needs: gate
+    if: needs.gate.outputs.pass == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Slice passed the gate -> content scale-up (P5)."
+
+  # ---- STAGE 8b: regression + perf gate -------------------------------------
+  regression:
+    needs: production
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Regression suite (P5)."
+
+  # ---- STAGE 9: release ------------------------------------------------------
+  release:
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Release - export matrix + butler push + Pages (P6)."
+
+  # ---- STAGE 10: learn -------------------------------------------------------
+  learn:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python orchestrator/learn/run.py || echo "learn not yet implemented (P6)"
+
+  # ---- STAGE 11: weekly radar (schedule only) --------------------------------
+  radar:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Weekly market radar -> auto-issue (P7)."
