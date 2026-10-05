@@ -38,6 +38,7 @@ var lap_start := 0.0
 var lap_times: Array = []
 var nitro := 1.0
 var boosting := false
+var autopilot := false
 var wheel_nodes: Array = []
 
 func _ready() -> void:
@@ -89,7 +90,7 @@ func _physics_process(delta: float) -> void:
 	elif not can_drive:
 		speed = 0.0
 		steer_target = 0.0
-	elif is_ai:
+	elif is_ai or autopilot:
 		_ai_drive(delta)
 	else:
 		_player_drive(delta)

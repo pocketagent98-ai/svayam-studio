@@ -2,7 +2,7 @@ extends Node3D
 ## Builds the world, spawns the player + AI opponents, runs a countdown,
 ## the race loop, records, and a simple procedural engine sound.
 
-signal race_finished(summary: String)
+signal race_finished(result: Dictionary)
 
 const TrackScript := preload("res://scripts/Track.gd")
 const CarScript := preload("res://scripts/Car.gd")
@@ -199,7 +199,10 @@ func _finish() -> void:
 		car_name, track.track_name, player.place, num_cars,
 		_fmt(race_time), _fmt(bl), note
 	]
-	race_finished.emit(summary)
+	race_finished.emit({
+		"summary": summary, "place": player.place, "time": race_time,
+		"track": track.track_name, "laps": total_laps, "record": note != "",
+	})
 
 func _load_records() -> Dictionary:
 	if not FileAccess.file_exists(RECORDS_PATH):
@@ -224,7 +227,9 @@ func _fmt(t: float) -> String:
 	return "%d:%02d.%02d" % [m, s, cs]
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("autopilot"):
+		player.autopilot = not player.autopilot
 	if event.is_action_pressed("restart"):
-		race_finished.emit("Restarted")
+		race_finished.emit({"summary": "Restarted", "place": 0, "time": 0.0, "track": track.track_name})
 	if event.is_action_pressed("back"):
-		race_finished.emit("Back to menu")
+		race_finished.emit({"summary": "Back to menu", "place": 0, "time": 0.0, "track": track.track_name})

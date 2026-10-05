@@ -239,6 +239,23 @@ func _place_scenery() -> void:
 	_place("flagCheckers.glb", 6.0, p0 + r0 * (road_half_width + 6.0), p0)
 	_place("bannerTowerRed.glb", 11.0, p0 - r0 * (road_half_width + 6.0), p0)
 
+	# start gantry over the line
+	_place("overhead.glb", 9.0, p0, p0 + t0)
+
+	# pit lane: a row of garages just after the start
+	var k := 0
+	while k < 8:
+		var idx := (2 + k * 2) % n
+		var p := centerline[idx]
+		var t := _tangent(idx)
+		var right := t.cross(Vector3.UP).normalized()
+		_place("pitsGarage.glb", 5.0, p + right * (road_half_width + 7.5), p)
+		k += 1
+
+	_place("grandStandCovered.glb", 8.5, centerline[4] + _tangent(4).cross(Vector3.UP).normalized() * (road_half_width + 11.0), centerline[4])
+	_place("bannerTowerGreen.glb", 11.0, centerline[6] - _tangent(6).cross(Vector3.UP).normalized() * (road_half_width + 6.0), centerline[6])
+	_place("tentLong.glb", 3.5, centerline[8] + _tangent(8).cross(Vector3.UP).normalized() * (road_half_width + 9.0), centerline[8])
+
 # ------------------------------------------------------------- start line
 func _build_start_line() -> void:
 	var mat := StandardMaterial3D.new()

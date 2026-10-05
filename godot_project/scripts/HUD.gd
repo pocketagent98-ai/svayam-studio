@@ -24,7 +24,7 @@ func _ready() -> void:
 	time_label = _mk(Vector2(30, 144), 24, HORIZONTAL_ALIGNMENT_LEFT)
 	best_label = _mk(Vector2(30, 176), 24, HORIZONTAL_ALIGNMENT_LEFT)
 	hint_label = _mk(Vector2(30, 660), 18, HORIZONTAL_ALIGNMENT_LEFT)
-	hint_label.text = "W/Up gas   S/Down brake   A/D steer   Shift nitro   Space handbrake   R restart   Esc menu"
+	hint_label.text = "W/Up gas   S/Down brake   A/D steer   Shift nitro   C autopilot   Space handbrake   R restart   Esc menu"
 
 	countdown_label = _mk(Vector2(0, 240), 110, HORIZONTAL_ALIGNMENT_CENTER)
 	countdown_label.size = Vector2(1280, 140)

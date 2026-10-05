@@ -18,6 +18,7 @@ built with **real 3D models** from Kenney's CC0 kits.
 | Steer | A / D / Left / Right |
 | Nitro boost | Shift |
 | Handbrake | Space |
+| Autopilot (AI co-pilot) | C |
 | Restart | R |
 | Menu | Esc |
 
@@ -25,9 +26,13 @@ built with **real 3D models** from Kenney's CC0 kits.
 
 - **Real 3D car models** (6 different cars) with spinning wheels — Kenney CC0 kit.
 - **Real 3D scenery** along every track: grandstands, light posts, overhead
-  gantries, trees, billboards, tents, pylons, checkered flags.
+  gantries, trees, billboards, tents, pylons, checkered flags, and a pit lane
+  of garages under a start gantry.
 - **3 tracks**: Coastal Loop, City Circuit, Mountain Pass (generated in code).
 - **Garage**: choose your car and track; cars differ in speed, grip and nitro.
+- **Championship mode**: three races across the three tracks with points and a
+  champion screen.
+- **Autopilot**: press C to let the AI co-pilot drive for you (press again to take over).
 - **Nitro boost** with a recharge bar.
 - **3-2-1-GO countdown** before the lights go green.
 - **6-car race**: you plus 5 AI opponents.

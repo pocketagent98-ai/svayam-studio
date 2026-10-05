@@ -32,11 +32,16 @@ var race: Node3D
 var car_index := 0
 var track_index := 0
 var total_laps := 3
+var mode := "quick"
+var cup_index := 0
+var cup_points := 0
+var cup_places: Array = []
+const CUP_POINTS := [10, 8, 6, 5, 4, 3]
 
 func _ready() -> void:
 	_register_actions()
 	if "--autoplay" in OS.get_cmdline_user_args():
-		_start_race()
+		_start_quick()
 	else:
 		_show_menu()
 
@@ -48,6 +53,7 @@ func _register_actions() -> void:
 	_add_action("steer_right", [KEY_D, KEY_RIGHT])
 	_add_action("handbrake", [KEY_SPACE])
 	_add_action("nitro", [KEY_SHIFT])
+	_add_action("autopilot", [KEY_C])
 	_add_action("restart", [KEY_R])
 	_add_action("back", [KEY_ESCAPE])
 
@@ -119,9 +125,10 @@ func _show_menu() -> void:
 	_bg()
 	_title("RAGE SPEED")
 	_label("SVAYAM Racing", Vector2(260, 130), 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_button("START RACE", Vector2(480, 250), Vector2(320, 56), _start_race)
-	_button("GARAGE", Vector2(480, 320), Vector2(320, 56), _show_garage)
-	_button("QUIT", Vector2(480, 390), Vector2(320, 56), func(): get_tree().quit())
+	_button("START RACE", Vector2(480, 250), Vector2(320, 56), _start_quick)
+	_button("CHAMPIONSHIP", Vector2(480, 316), Vector2(320, 56), _start_cup)
+	_button("GARAGE", Vector2(480, 382), Vector2(320, 56), _show_garage)
+	_button("QUIT", Vector2(480, 448), Vector2(320, 56), func(): get_tree().quit())
 
 # ---------------------------------------------------------------- garage
 func _show_garage() -> void:
@@ -157,21 +164,44 @@ func _select_track(idx: int) -> void:
 	_show_garage()
 
 # ---------------------------------------------------------------- race
+func _start_quick() -> void:
+	mode = "quick"
+	_start_race()
+
+func _start_cup() -> void:
+	mode = "cup"
+	cup_index = 0
+	cup_points = 0
+	cup_places = []
+	_start_race()
+
 func _start_race() -> void:
 	state = "race"
 	_clear_ui()
 	_clear_race()
+	var ti: int = cup_index if mode == "cup" else track_index
 	race = RaceScript.new()
 	race.car_color = CARS[car_index]["color"]
 	race.car_name = CARS[car_index]["name"]
 	race.car_model = CARS[car_index]["model"]
 	race.car_stats = CARS[car_index]["stats"]
-	race.track_index = track_index
+	race.track_index = ti
 	race.total_laps = total_laps
 	race.race_finished.connect(_on_race_finished)
 	add_child(race)
 
-func _on_race_finished(summary: String) -> void:
+func _on_race_finished(result: Dictionary) -> void:
+	var summary: String = result.get("summary", "")
+	var place: int = int(result.get("place", 0))
+	if mode == "cup" and place > 0:
+		cup_points += CUP_POINTS[mini(place - 1, CUP_POINTS.size() - 1)]
+		cup_places.append(place)
+		cup_index += 1
+		if cup_index < TRACK_NAMES.size():
+			_show_cup_next()
+		else:
+			_show_cup_final()
+		return
 	state = "results"
 	_clear_race()
 	_new_ui()
@@ -182,3 +212,27 @@ func _on_race_finished(summary: String) -> void:
 	_button("RACE AGAIN", Vector2(480, 470), Vector2(320, 56), _start_race)
 	_button("GARAGE", Vector2(480, 536), Vector2(320, 44), _show_garage)
 	_button("MAIN MENU", Vector2(480, 590), Vector2(320, 44), _show_menu)
+
+func _show_cup_next() -> void:
+	state = "results"
+	_clear_race()
+	_new_ui()
+	_bg()
+	_title("ROUND %d / %d DONE" % [cup_index, TRACK_NAMES.size()])
+	var l := _label("Points so far: %d" % cup_points, Vector2(340, 180), 26, HORIZONTAL_ALIGNMENT_CENTER)
+	l.size = Vector2(600, 60)
+	var nxt := _label("Next: %s" % TRACK_NAMES[cup_index], Vector2(340, 240), 24, HORIZONTAL_ALIGNMENT_CENTER)
+	nxt.size = Vector2(600, 60)
+	_button("NEXT RACE", Vector2(480, 400), Vector2(320, 56), _start_race)
+	_button("MAIN MENU", Vector2(480, 466), Vector2(320, 44), _show_menu)
+
+func _show_cup_final() -> void:
+	state = "results"
+	_clear_race()
+	_new_ui()
+	_bg()
+	_title("CHAMPIONSHIP OVER")
+	var l := _label("Final points: %d\nPlaces: %s\n\nThanks for racing, %s!" % [cup_points, str(cup_places), CARS[car_index]["name"]], Vector2(340, 170), 26, HORIZONTAL_ALIGNMENT_CENTER)
+	l.size = Vector2(600, 260)
+	_button("NEW CHAMPIONSHIP", Vector2(480, 470), Vector2(320, 56), _start_cup)
+	_button("MAIN MENU", Vector2(480, 536), Vector2(320, 44), _show_menu)

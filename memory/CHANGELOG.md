@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [P0.5] — championship, autopilot, pit lane
+- Added **Championship mode**: 3 rounds with points, a between-rounds screen and a final standings screen.
+- Added **autopilot** (press C): the AI co-pilot drives the player's car; press again to take over.
+- Added a **pit lane** of garages, a start gantry, covered grandstand and banner towers (Kenney racing kit).
+- Race result now carries place/time/track so the top level can score the cup.
+- Verified headless: menu clean, race finishes, championship round + final screens reached.
+
 ## [P0.4] — real 3D models
 - Added real 3D models (Kenney CC0 Car Kit + Racing Kit) under `models/kenney/`.
 - `scripts/ModelUtil.gd`: loads .glb, auto-scales by bounding box, auto-aligns
