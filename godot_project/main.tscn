@@ -1,8 +1,6 @@
-[gd_scene format=3 uid="uid://svayam0000001"]
+[gd_scene load_steps=2 format=3 uid="uid://svayamrage0001"]
 
-[node name="Main" type="Node2D"]
+[ext_resource type="Script" path="res://scripts/Game.gd" id="1_game"]
 
-[node name="Label" type="Label" parent="."]
-offset_left = 40.0
-offset_top = 40.0
-text = "SVAYAM STUDIO - vertical slice placeholder"
+[node name="Game" type="Node3D"]
+script = ExtResource("1_game")
