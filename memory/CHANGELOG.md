@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [P0.6] — studio setup wired to your AI
+- Added NaraRouter as the first provider in `orchestrator/llm_router.py`
+  (URL/model read from env; no key in the code).
+- Workflow now passes secrets to every job (`env:` block) and has a **smoke**
+  job to prove the AI connection on demand.
+- Added `SETUP.md` (step-by-step) and `.env.example`.
+- Fixed a real bug: `orchestrator/inspect.py` shadowed Python's built-in
+  `inspect` module; renamed to `orchestrator/engine_profile.py`.
+- Verified: workflow YAML parses, router runs and lists its 5-provider chain,
+  engine_profile runs.
+
 ## [P0.5] — championship, autopilot, pit lane
 - Added **Championship mode**: 3 rounds with points, a between-rounds screen and a final standings screen.
 - Added **autopilot** (press C): the AI co-pilot drives the player's car; press again to take over.

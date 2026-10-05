@@ -57,6 +57,17 @@ class Provider:
 
 # Order matters: cheapest / highest-limit first. Stage 10 may rewrite the order.
 CHAIN: list[Provider] = [
+    # The owner's own router (NaraRouter) — free NVIDIA Nemotron models.
+    # The URL and model come from the environment, so nothing is hardcoded.
+    Provider(
+        name="nararouter",
+        env_key="NARAROUTER_API_KEY",
+        url=os.environ.get("NARAROUTER_BASE_URL", "https://router.bynara.id/v1").rstrip("/")
+        + "/chat/completions",
+        model=os.environ.get("NARAROUTER_MODEL", "nemotron-3-ultra"),
+        style="openai",
+        extra_headers={"X-Title": "SVAYAM STUDIO"},
+    ),
     Provider(
         name="github-models",
         env_key="GITHUB_TOKEN",

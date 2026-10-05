@@ -37,15 +37,22 @@ godot_project/                the game under construction
 Trigger -> Research -> Design -> Assets -> Vertical slice -> QA -> Fixer ->
 Gate -> Production -> Regression -> Release -> Learn -> (weekly Radar).
 
+## Setup (do this first)
+
+See **[SETUP.md](SETUP.md)**. In short: add your key as a repository **secret**
+named `NARAROUTER_API_KEY` (Settings -> Secrets and variables -> Actions), then
+run the **smoke** job from the Actions tab to confirm it works. Keys are never
+written into the code.
+
 ## Cost
 
 Target is **Rs 0**. Public repo = free Actions minutes; Pages/itch free; no model
-hosting. Secrets needed: `GITHUB_TOKEN` (auto), `GROQ_API_KEY`,
-`GEMINI_API_KEY`, `OPENROUTER_API_KEY`, optional `ITCH_API_KEY`.
+hosting. Secrets: `GITHUB_TOKEN` (auto) and `NARAROUTER_API_KEY` (yours).
+Optional fallbacks: `GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`.
 
 ## Try the router locally
 
 ```bash
-export GROQ_API_KEY=...        # or GEMINI_API_KEY / OPENROUTER_API_KEY
+export NARAROUTER_API_KEY=...   # your key, in your own shell only
 python orchestrator/llm_router.py --prompt "one-line Godot 4.7 tip"
 ```

@@ -23,7 +23,37 @@ concurrency:
   group: factory-${{ github.event.issue.number || 'manual' }}
   cancel-in-progress: true
 
+# Every AI call reads its key from a repository secret — never from the code.
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NARAROUTER_API_KEY: ${{ secrets.NARAROUTER_API_KEY }}
+  NARAROUTER_BASE_URL: ${{ vars.NARAROUTER_BASE_URL }}
+  NARAROUTER_MODEL: ${{ vars.NARAROUTER_MODEL }}
+  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
 jobs:
+  # ---- SMOKE TEST: prove the AI router works, using your secrets ------------
+  smoke:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Which providers are configured
+        run: |
+          python - <<'PY'
+          import os
+          for k in ["NARAROUTER_API_KEY", "GITHUB_TOKEN", "GROQ_API_KEY",
+                    "GEMINI_API_KEY", "OPENROUTER_API_KEY"]:
+              print(f"{k:22s} {'set' if os.environ.get(k) else 'missing'}")
+          PY
+      - name: Ask the router a trivial question
+        run: python orchestrator/llm_router.py --prompt "Reply with exactly the words ROUTER OK"
+
   # ---- STAGE 0: inspect -> ENGINE_PROFILE.json + CAPABILITY_REPORT.md -------
   inspect:
     if: github.event_name != 'issues' || github.event.label.name == 'new-game'
@@ -35,7 +65,7 @@ jobs:
       - name: Write engine profile
         id: profile
         run: |
-          python orchestrator/inspect.py --out context/ENGINE_PROFILE.json
+          python orchestrator/engine_profile.py --out context/ENGINE_PROFILE.json
           echo "ok=true" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
