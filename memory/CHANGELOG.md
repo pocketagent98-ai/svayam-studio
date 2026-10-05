@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [P0.8] — Android APK build
+- Added an Android export preset (`stunt_racer/export_presets.cfg`) and enabled
+  ETC2/ASTC texture import (required for Android export).
+- Built and signed **StuntRacer.apk** (arm64-v8a, ~28 MB, v2+v3 signed, verified).
+- Added `stunt_racer/BUILD.md`: install, rebuild, and Google Play release steps
+  (own upload key + AAB via Gradle build).
+
 ## [P0.7] — stunt racer vertical slice (new game)
 - New project `stunt_racer/` built to the user's PRD/TRD: endless arcade stunt racer.
 - Custom car physics: RigidBody3D + 4 RayCast3D suspension + Ackermann-style
