@@ -9,6 +9,14 @@ workflow graph, the hosted-only LLM router, the memory files, and the skill
 stubs. The stage logic (research, design, codegen, QA, ship) is filled in over
 phases P1–P7 — see `ROADMAP.md`.
 
+## Projects in this repo
+
+- **`stunt_racer/`** — the endless arcade stunt racer built to the PRD/TRD
+  ("Architecting the Core Loop"). Vertical slice: procedural endless course,
+  RigidBody raycast car physics, obstacles, coins, garage, binary save.
+- **`godot_project/`** — *RAGE SPEED*, the earlier lap-based arcade racer
+  (menu, garage, 3 tracks, 6 cars, championship, autopilot, minimap).
+
 ## Non-negotiable rules
 
 The full rule set lives in `AGENTS.md` (R1–R10). The short version:

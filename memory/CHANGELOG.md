@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [P0.7] — stunt racer vertical slice (new game)
+- New project `stunt_racer/` built to the user's PRD/TRD: endless arcade stunt racer.
+- Custom car physics: RigidBody3D + 4 RayCast3D suspension + Ackermann-style
+  steering + downforce + lateral-grip drift (TRD model, not VehicleBody).
+- Endless procedural track (centreline grows ahead, mesh extruded, recycled behind).
+- Obstacles (crash gates, knock-through blocks), coins, chase camera with
+  KeepAspect = Keep Height, portrait mobile renderer.
+- FSM app flow (menu/garage/race/paused/results) and a binary save system
+  (`Global` autoload, store_var/get_var, atomic swap, .bak backup).
+- Touch steering for one-finger mobile play.
+- Verified headless: imports clean, menu loads, automated run drives ~85 km/h
+  along the generated track and collects coins.
+
 ## [P0.6] — studio setup wired to your AI
 - Added NaraRouter as the first provider in `orchestrator/llm_router.py`
   (URL/model read from env; no key in the code).

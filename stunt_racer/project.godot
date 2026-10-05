@@ -1,0 +1,30 @@
+; Stunt Racer — SVAYAM STUDIO (Race Master 3D-style endless stunt racer)
+; Verified engine: Godot 4.7.2.stable.official.ed1daf0bf
+
+config_version=5
+
+[application]
+
+config/name="Stunt Racer - SVAYAM"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+
+[autoload]
+
+Global="*res://scripts/Global.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+
+[physics]
+
+3d/default_gravity=22.0
