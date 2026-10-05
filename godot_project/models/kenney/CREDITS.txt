@@ -1,0 +1,18 @@
+3D MODELS — CREDITS AND LICENCE
+================================
+
+All models in this folder are from Kenney's free asset packs.
+
+  * Car Kit  (raceCar*, wheel*, sedan-sports, hatchback-sports, colormap)
+  * Racing Kit (grandStand, lightPostModern, overhead, treeLarge, treeSmall,
+    flagCheckers, bannerTowerRed, billboard, tent, barrierRed, roadStart, pylon)
+
+Author : Kenney (https://kenney.nl)
+Licence: Creative Commons Zero (CC0 1.0 Universal)
+         https://creativecommons.org/publicdomain/zero/1.0/
+
+You may use these models for personal, educational and commercial purposes.
+Crediting Kenney is appreciated but not required.
+
+Source used: the Kenney asset mirror at
+https://github.com/shorepine/kenney  (3d/car and 3d/racing folders).

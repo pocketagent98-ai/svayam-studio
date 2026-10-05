@@ -11,8 +11,17 @@ const CamScript := preload("res://scripts/ChaseCamera.gd")
 
 const RECORDS_PATH := "user://records.json"
 
-var car_color := Color(0.12, 0.40, 0.95)
-var car_name := "Blue Lightning"
+const AI_MODELS := [
+	"res://models/kenney/raceCarGreen.glb",
+	"res://models/kenney/raceCarOrange.glb",
+	"res://models/kenney/raceCarWhite.glb",
+	"res://models/kenney/sedan-sports.glb",
+	"res://models/kenney/hatchback-sports.glb",
+]
+
+var car_color := Color(0.86, 0.12, 0.12)
+var car_name := "Red Comet"
+var car_model := "res://models/kenney/raceCarRed.glb"
 var car_stats := {"top": 1.0, "accel": 1.0, "grip": 1.0, "boost": 1.0}
 var track_index := 0
 var total_laps := 3
@@ -80,8 +89,10 @@ func _spawn_cars() -> void:
 		if i == 0:
 			car.color = car_color
 			car.stats = car_stats
+			car.model_path = car_model
 		else:
 			car.color = Color.from_hsv(fmod(0.15 * i, 1.0), 0.7, 0.9)
+			car.model_path = AI_MODELS[(i - 1) % AI_MODELS.size()]
 			car.stats = {
 				"top": 0.94 + 0.02 * i, "accel": 0.96 + 0.015 * i,
 				"grip": 0.98 + 0.01 * i, "boost": 1.0,

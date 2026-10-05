@@ -1,5 +1,9 @@
 extends CharacterBody3D
-## Arcade race car (player + AI) with per-car stats and a nitro boost.
+## Arcade race car (player + AI) with per-car stats, a nitro boost, and a
+## real 3D model (Kenney CC0 kit). Falls back to a simple box if the model
+## cannot be loaded.
+
+const ModelUtil := preload("res://scripts/ModelUtil.gd")
 
 const BASE_SPEED := 52.0
 const BASE_ACCEL := 20.0
@@ -11,11 +15,13 @@ const GRAVITY := 26.0
 const BOOST_MULT := 1.45
 const NITRO_DRAIN := 0.5
 const NITRO_REGEN := 0.12
+const CAR_LENGTH := 4.4
 
 var is_ai := false
 var is_player := false
 var color := Color(0.12, 0.40, 0.95)
 var stats := {"top": 1.0, "accel": 1.0, "grip": 1.0, "boost": 1.0}
+var model_path := "res://models/kenney/raceCarRed.glb"
 
 var waypoints := PackedVector3Array()
 var wp := 0
@@ -32,11 +38,10 @@ var lap_start := 0.0
 var lap_times: Array = []
 var nitro := 1.0
 var boosting := false
-var wheels: Array = []
+var wheel_nodes: Array = []
 
 func _ready() -> void:
 	_build_body()
-	_build_wheels()
 
 func max_speed() -> float:
 	return BASE_SPEED * stats["top"]
@@ -46,65 +51,36 @@ func turn_rate() -> float:
 	return BASE_TURN * stats["grip"]
 
 func _build_body() -> void:
+	# --- collision (physics) ---
+	var cs := CollisionShape3D.new()
+	var bs := BoxShape3D.new()
+	bs.size = Vector3(2.0, 0.9, CAR_LENGTH)
+	cs.shape = bs
+	cs.position = Vector3(0, 0.5, 0)
+	add_child(cs)
+
+	# --- visual: real 3D model ---
+	var model := ModelUtil.make_model(model_path, CAR_LENGTH, true)
+	var has_mesh := false
+	for c in model.get_children():
+		if c is Node3D:
+			has_mesh = true
+	if has_mesh:
+		add_child(model)
+		wheel_nodes = ModelUtil.find_all(model, "wheel", [])
+	else:
+		_build_fallback_box()
+
+func _build_fallback_box() -> void:
 	var paint := StandardMaterial3D.new()
 	paint.albedo_color = color
-	paint.metallic = 0.4
-	paint.roughness = 0.3
-
 	var body := MeshInstance3D.new()
 	var bm := BoxMesh.new()
-	bm.size = Vector3(1.9, 0.6, 4.2)
+	bm.size = Vector3(1.9, 0.6, CAR_LENGTH)
 	body.mesh = bm
 	body.material_override = paint
 	body.position = Vector3(0, 0.6, 0)
 	add_child(body)
-
-	var glass := StandardMaterial3D.new()
-	glass.albedo_color = Color(0.08, 0.09, 0.12)
-	glass.metallic = 0.7
-	glass.roughness = 0.15
-	var cabin := MeshInstance3D.new()
-	var cm := BoxMesh.new()
-	cm.size = Vector3(1.5, 0.5, 1.8)
-	cabin.mesh = cm
-	cabin.material_override = glass
-	cabin.position = Vector3(0, 1.0, 0.1)
-	add_child(cabin)
-
-	var wing := MeshInstance3D.new()
-	var wm := BoxMesh.new()
-	wm.size = Vector3(1.8, 0.08, 0.5)
-	wing.mesh = wm
-	wing.material_override = paint
-	wing.position = Vector3(0, 1.1, 1.85)
-	add_child(wing)
-
-	var cs := CollisionShape3D.new()
-	var bs := BoxShape3D.new()
-	bs.size = Vector3(1.9, 0.9, 4.2)
-	cs.shape = bs
-	cs.position = Vector3(0, 0.65, 0)
-	add_child(cs)
-
-func _build_wheels() -> void:
-	var rubber := StandardMaterial3D.new()
-	rubber.albedo_color = Color(0.05, 0.05, 0.05)
-	var positions := [
-		Vector3(-0.95, 0.35, -1.35), Vector3(0.95, 0.35, -1.35),
-		Vector3(-0.95, 0.35, 1.35), Vector3(0.95, 0.35, 1.35),
-	]
-	for p in positions:
-		var tyre := MeshInstance3D.new()
-		var cyl := CylinderMesh.new()
-		cyl.top_radius = 0.35
-		cyl.bottom_radius = 0.35
-		cyl.height = 0.26
-		tyre.mesh = cyl
-		tyre.material_override = rubber
-		tyre.rotation_degrees = Vector3(0, 0, 90)
-		tyre.position = p
-		add_child(tyre)
-		wheels.append(tyre)
 
 # ------------------------------------------------------------- driving
 func _physics_process(delta: float) -> void:
@@ -118,7 +94,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		_player_drive(delta)
 
-	nitro = clampf(nitro + NITRO_REGEN * delta, 0.0, 1.0) if not boosting else nitro
+	if not boosting:
+		nitro = clampf(nitro + NITRO_REGEN * delta, 0.0, 1.0)
 
 	var mult := BOOST_MULT if boosting else 1.0
 	var turn := steer_target * STEER_SIGN * turn_rate() * delta * clampf(absf(speed) / 8.0, 0.0, 1.0)
@@ -138,8 +115,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	var spin := speed * delta / 0.35
-	for w in wheels:
-		w.rotate_x(spin)
+	for w in wheel_nodes:
+		if is_instance_valid(w):
+			w.rotate_x(spin)
 
 	_track_progress()
 

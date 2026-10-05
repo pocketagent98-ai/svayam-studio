@@ -4,18 +4,24 @@ extends Node3D
 const RaceScript := preload("res://scripts/Race.gd")
 
 const CARS := [
-	{"name": "Blue Lightning", "color": Color(0.12, 0.40, 0.95),
-	 "stats": {"top": 1.00, "accel": 1.00, "grip": 1.00, "boost": 1.0}},
 	{"name": "Red Comet", "color": Color(0.86, 0.12, 0.12),
+	 "model": "res://models/kenney/raceCarRed.glb",
 	 "stats": {"top": 1.14, "accel": 0.94, "grip": 0.93, "boost": 1.0}},
 	{"name": "Green Phantom", "color": Color(0.10, 0.72, 0.32),
+	 "model": "res://models/kenney/raceCarGreen.glb",
 	 "stats": {"top": 0.94, "accel": 1.12, "grip": 1.12, "boost": 1.0}},
-	{"name": "Yellow Bolt", "color": Color(0.95, 0.80, 0.10),
+	{"name": "Orange Bolt", "color": Color(0.95, 0.55, 0.10),
+	 "model": "res://models/kenney/raceCarOrange.glb",
 	 "stats": {"top": 1.05, "accel": 1.05, "grip": 0.90, "boost": 1.25}},
-	{"name": "Purple Storm", "color": Color(0.52, 0.22, 0.86),
-	 "stats": {"top": 1.00, "accel": 1.00, "grip": 1.18, "boost": 0.90}},
 	{"name": "White Ghost", "color": Color(0.92, 0.92, 0.95),
+	 "model": "res://models/kenney/raceCarWhite.glb",
 	 "stats": {"top": 1.09, "accel": 0.90, "grip": 1.02, "boost": 1.05}},
+	{"name": "Blue Sedan", "color": Color(0.12, 0.40, 0.95),
+	 "model": "res://models/kenney/sedan-sports.glb",
+	 "stats": {"top": 1.00, "accel": 1.00, "grip": 1.00, "boost": 1.0}},
+	{"name": "Silver Hatch", "color": Color(0.60, 0.62, 0.68),
+	 "model": "res://models/kenney/hatchback-sports.glb",
+	 "stats": {"top": 1.00, "accel": 1.00, "grip": 1.18, "boost": 0.90}},
 ]
 
 const TRACK_NAMES := ["Coastal Loop", "City Circuit", "Mountain Pass"]
@@ -158,6 +164,7 @@ func _start_race() -> void:
 	race = RaceScript.new()
 	race.car_color = CARS[car_index]["color"]
 	race.car_name = CARS[car_index]["name"]
+	race.car_model = CARS[car_index]["model"]
 	race.car_stats = CARS[car_index]["stats"]
 	race.track_index = track_index
 	race.total_laps = total_laps

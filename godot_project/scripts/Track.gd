@@ -1,6 +1,10 @@
 extends Node3D
 ## Builds a race track procedurally. Three layouts are defined here; the
-## selected one is built from a closed Catmull-Rom loop.
+## selected one is built from a closed Catmull-Rom loop. Real 3D scenery
+## (Kenney CC0 racing kit) is placed along the road.
+
+const ModelUtil := preload("res://scripts/ModelUtil.gd")
+const MODELS := "res://models/kenney/"
 
 const TRACKS := [
 	{
@@ -43,6 +47,7 @@ func build() -> void:
 	_build_road()
 	_build_walls()
 	_build_start_line()
+	_place_scenery()
 
 # ------------------------------------------------------------- geometry maths
 func _sample_loop(ctrl: Array, steps: int) -> PackedVector3Array:
@@ -153,6 +158,86 @@ func _build_walls() -> void:
 		cs.shape = shape
 		body.add_child(cs)
 		add_child(body)
+
+# ------------------------------------------------------------- scenery
+func _place(path: String, height: float, pos: Vector3, face_point: Vector3) -> void:
+	var prop := ModelUtil.make_prop(MODELS + path, height)
+	add_child(prop)
+	pos.y = 0.0
+	prop.global_position = pos
+	if prop.global_position.distance_to(face_point) > 0.5:
+		prop.look_at(face_point, Vector3.UP)
+
+func _place_scenery() -> void:
+	var n := centerline.size()
+	var i := 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		var side := 1.0 if (i / 10) % 2 == 0 else -1.0
+		_place("lightPostModern.glb", 8.0, p + right * side * (road_half_width + 3.5), p)
+		i += 10
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		var side := -1.0 if (i / 6) % 2 == 0 else 1.0
+		var off := 14.0 + float(i % 5) * 3.0
+		var tree := "treeLarge.glb" if i % 2 == 0 else "treeSmall.glb"
+		_place(tree, 6.5 + float(i % 3), p + right * side * off, p)
+		i += 6
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		_place("grandStand.glb", 7.0, p + right * (road_half_width + 12.0), p)
+		i += 40
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		_place("overhead.glb", 8.5, p + right * 0.0, p + t)
+		i += 45
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		var side := 1.0 if (i / 25) % 2 == 0 else -1.0
+		_place("billboard.glb", 6.0, p + right * side * (road_half_width + 16.0), p)
+		i += 25
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		var side := -1.0 if (i / 22) % 2 == 0 else 1.0
+		_place("tent.glb", 3.5, p + right * side * (road_half_width + 8.0), p)
+		i += 22
+
+	i = 0
+	while i < n:
+		var p := centerline[i]
+		var t := _tangent(i)
+		var right := t.cross(Vector3.UP).normalized()
+		var side := 1.0 if (i / 8) % 2 == 0 else -1.0
+		_place("pylon.glb", 1.4, p + right * side * (road_half_width + 1.6), p)
+		i += 8
+
+	var p0 := centerline[0]
+	var t0 := _tangent(0)
+	var r0 := t0.cross(Vector3.UP).normalized()
+	_place("flagCheckers.glb", 6.0, p0 + r0 * (road_half_width + 6.0), p0)
+	_place("bannerTowerRed.glb", 11.0, p0 - r0 * (road_half_width + 6.0), p0)
 
 # ------------------------------------------------------------- start line
 func _build_start_line() -> void:

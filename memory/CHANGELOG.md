@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [P0.4] — real 3D models
+- Added real 3D models (Kenney CC0 Car Kit + Racing Kit) under `models/kenney/`.
+- `scripts/ModelUtil.gd`: loads .glb, auto-scales by bounding box, auto-aligns
+  the car's long axis and front direction from the model's own wheel nodes.
+- Cars now use real 3D models with spinning wheels (6 cars, 4 of them unique models).
+- Tracks now place real 3D scenery: grandstands, light posts, overhead gantries,
+  trees, billboards, tents, pylons and checkered flags.
+- Verified headless: all models import, the car loads with 4 wheels, race finishes.
+
 ## [P0.2] — racing vertical slice
 - Verified the engine: Godot 4.7.2-stable (`ed1daf0bf`) downloaded and run headless.
 - Built **RAGE SPEED**, a playable Godot racing vertical slice:
