@@ -1,23 +1,44 @@
 extends Node3D
-## Builds the race track procedurally: ground, road mesh, barrier walls,
-## a start line, and the centreline waypoints used by the AI.
+## Builds a race track procedurally. Three layouts are defined here; the
+## selected one is built from a closed Catmull-Rom loop.
 
+const TRACKS := [
+	{
+		"name": "Coastal Loop",
+		"ctrl": [
+			Vector3(0, 0, 0), Vector3(70, 0, 8), Vector3(120, 0, 70),
+			Vector3(95, 0, 145), Vector3(30, 0, 165), Vector3(-45, 0, 150),
+			Vector3(-100, 0, 95), Vector3(-110, 0, 20), Vector3(-65, 0, -40),
+		],
+	},
+	{
+		"name": "City Circuit",
+		"ctrl": [
+			Vector3(-120, 0, -120), Vector3(120, 0, -120), Vector3(150, 0, -40),
+			Vector3(120, 0, 40), Vector3(150, 0, 120), Vector3(60, 0, 160),
+			Vector3(-40, 0, 150), Vector3(-150, 0, 120), Vector3(-170, 0, 0),
+			Vector3(-150, 0, -80),
+		],
+	},
+	{
+		"name": "Mountain Pass",
+		"ctrl": [
+			Vector3(0, 0, -150), Vector3(95, 0, -105), Vector3(140, 0, -10),
+			Vector3(95, 0, 95), Vector3(0, 0, 140), Vector3(-95, 0, 95),
+			Vector3(-140, 0, 0), Vector3(-95, 0, -95),
+		],
+	},
+]
+
+var track_index := 0
 var centerline := PackedVector3Array()
 var road_half_width := 7.0
+var track_name := ""
 
 func build() -> void:
-	var ctrl := [
-		Vector3(0, 0, 0),
-		Vector3(70, 0, 8),
-		Vector3(120, 0, 70),
-		Vector3(95, 0, 145),
-		Vector3(30, 0, 165),
-		Vector3(-45, 0, 150),
-		Vector3(-100, 0, 95),
-		Vector3(-110, 0, 20),
-		Vector3(-65, 0, -40),
-	]
-	centerline = _sample_loop(ctrl, 12)
+	var def: Dictionary = TRACKS[track_index]
+	track_name = def["name"]
+	centerline = _sample_loop(def["ctrl"], 12)
 	_build_ground()
 	_build_road()
 	_build_walls()
@@ -54,19 +75,19 @@ func _build_ground() -> void:
 	mat.albedo_color = Color(0.18, 0.42, 0.20)
 	mat.roughness = 1.0
 	var mesh := PlaneMesh.new()
-	mesh.size = Vector2(900, 900)
+	mesh.size = Vector2(1200, 1200)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.material_override = mat
-	mi.position = Vector3(0, -0.02, 60)
+	mi.position = Vector3(0, -0.02, 0)
 	add_child(mi)
 
 	var body := StaticBody3D.new()
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(900, 1.0, 900)
+	box.size = Vector3(1200, 1.0, 1200)
 	cs.shape = box
-	cs.position = Vector3(0, -0.5, 60)
+	cs.position = Vector3(0, -0.5, 0)
 	body.add_child(cs)
 	add_child(body)
 
@@ -139,7 +160,6 @@ func _build_start_line() -> void:
 	mat.albedo_color = Color(0.95, 0.95, 0.95)
 	var p := centerline[0]
 	var t := _tangent(0)
-	var right := t.cross(Vector3.UP).normalized()
 	var mi := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(road_half_width * 2.0, 0.04, 1.2)

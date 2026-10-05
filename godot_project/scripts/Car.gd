@@ -1,18 +1,22 @@
 extends CharacterBody3D
-## Arcade race car (player + AI). A deterministic kinematic model — no
-## wheel-simulation guesswork, so it behaves the same every run.
+## Arcade race car (player + AI) with per-car stats and a nitro boost.
 
-const MAX_SPEED := 52.0        # m/s (~187 km/h)
-const ACCEL := 20.0
+const BASE_SPEED := 52.0
+const BASE_ACCEL := 20.0
+const BASE_TURN := 2.2
 const BRAKE := 34.0
 const FRICTION := 10.0
-const MAX_TURN := 2.2          # rad/s
-const STEER_SIGN := -1.0       # flip if the car turns the wrong way
+const STEER_SIGN := -1.0
 const GRAVITY := 26.0
+const BOOST_MULT := 1.45
+const NITRO_DRAIN := 0.5
+const NITRO_REGEN := 0.12
 
 var is_ai := false
 var is_player := false
 var color := Color(0.12, 0.40, 0.95)
+var stats := {"top": 1.0, "accel": 1.0, "grip": 1.0, "boost": 1.0}
+
 var waypoints := PackedVector3Array()
 var wp := 0
 var lap := 0
@@ -22,11 +26,24 @@ var total_laps := 3
 
 var speed := 0.0
 var steer_target := 0.0
+var can_drive := false
+var race_clock := 0.0
+var lap_start := 0.0
+var lap_times: Array = []
+var nitro := 1.0
+var boosting := false
 var wheels: Array = []
 
 func _ready() -> void:
 	_build_body()
 	_build_wheels()
+
+func max_speed() -> float:
+	return BASE_SPEED * stats["top"]
+func accel() -> float:
+	return BASE_ACCEL * stats["accel"]
+func turn_rate() -> float:
+	return BASE_TURN * stats["grip"]
 
 func _build_body() -> void:
 	var paint := StandardMaterial3D.new()
@@ -73,10 +90,8 @@ func _build_wheels() -> void:
 	var rubber := StandardMaterial3D.new()
 	rubber.albedo_color = Color(0.05, 0.05, 0.05)
 	var positions := [
-		Vector3(-0.95, 0.35, -1.35),
-		Vector3(0.95, 0.35, -1.35),
-		Vector3(-0.95, 0.35, 1.35),
-		Vector3(0.95, 0.35, 1.35),
+		Vector3(-0.95, 0.35, -1.35), Vector3(0.95, 0.35, -1.35),
+		Vector3(-0.95, 0.35, 1.35), Vector3(0.95, 0.35, 1.35),
 	]
 	for p in positions:
 		var tyre := MeshInstance3D.new()
@@ -95,12 +110,18 @@ func _build_wheels() -> void:
 func _physics_process(delta: float) -> void:
 	if finished:
 		speed = move_toward(speed, 0.0, BRAKE * delta)
+	elif not can_drive:
+		speed = 0.0
+		steer_target = 0.0
 	elif is_ai:
 		_ai_drive(delta)
 	else:
 		_player_drive(delta)
 
-	var turn := steer_target * STEER_SIGN * MAX_TURN * delta * clampf(absf(speed) / 8.0, 0.0, 1.0)
+	nitro = clampf(nitro + NITRO_REGEN * delta, 0.0, 1.0) if not boosting else nitro
+
+	var mult := BOOST_MULT if boosting else 1.0
+	var turn := steer_target * STEER_SIGN * turn_rate() * delta * clampf(absf(speed) / 8.0, 0.0, 1.0)
 	if speed < 0.0:
 		turn = -turn
 	rotate_y(turn)
@@ -108,15 +129,14 @@ func _physics_process(delta: float) -> void:
 	var fwd := -global_transform.basis.z
 	fwd.y = 0.0
 	fwd = fwd.normalized()
-	velocity.x = fwd.x * speed
-	velocity.z = fwd.z * speed
+	velocity.x = fwd.x * speed * mult
+	velocity.z = fwd.z * speed * mult
 	if is_on_floor():
 		velocity.y = 0.0
 	else:
 		velocity.y -= GRAVITY * delta
 	move_and_slide()
 
-	# spin the visual wheels
 	var spin := speed * delta / 0.35
 	for w in wheels:
 		w.rotate_x(spin)
@@ -127,15 +147,18 @@ func _player_drive(delta: float) -> void:
 	var acc := Input.get_action_strength("accelerate")
 	var br := Input.get_action_strength("brake")
 	steer_target = Input.get_axis("steer_left", "steer_right")
+	boosting = Input.is_action_pressed("nitro") and nitro > 0.02
+	if boosting:
+		nitro = maxf(0.0, nitro - NITRO_DRAIN * delta)
 	if Input.is_action_pressed("handbrake"):
 		br = 1.0
 	if acc > 0.01:
-		speed += ACCEL * acc * delta
+		speed += accel() * acc * delta
 	elif br > 0.01:
 		speed -= BRAKE * br * delta
 	else:
 		speed = move_toward(speed, 0.0, FRICTION * delta)
-	speed = clampf(speed, -MAX_SPEED * 0.3, MAX_SPEED)
+	speed = clampf(speed, -max_speed() * 0.3, max_speed())
 
 func _ai_drive(delta: float) -> void:
 	if waypoints.is_empty():
@@ -150,8 +173,8 @@ func _ai_drive(delta: float) -> void:
 	if absf(ang) > 0.55:
 		speed -= BRAKE * 0.8 * delta
 	else:
-		speed += ACCEL * 0.95 * delta
-	speed = clampf(speed, 0.0, MAX_SPEED * 0.95)
+		speed += accel() * 0.95 * delta
+	speed = clampf(speed, 0.0, max_speed() * 0.95)
 
 func _wp_ahead(k: int) -> Vector3:
 	var n := waypoints.size()
@@ -165,3 +188,12 @@ func _track_progress() -> void:
 		if wp >= waypoints.size():
 			wp = 0
 			lap += 1
+			lap_times.append(race_clock - lap_start)
+			lap_start = race_clock
+
+func best_lap() -> float:
+	var b := -1.0
+	for t in lap_times:
+		if b < 0.0 or t < b:
+			b = t
+	return b
